@@ -1,7 +1,9 @@
 package com.ge.predix.labs.rabbitmq.web;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -15,6 +17,7 @@ import org.springframework.cloud.service.ServiceInfo;
 import org.springframework.cloud.service.common.AmqpServiceInfo;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HomeController {
 	
-	private static final String QUEUE_NAME = "TestSV";
+	public static final String QUEUE_NAME = "TestSV";
 	private String result = "";
 	
     @Autowired private RabbitTemplate rabbitTemplate;
@@ -96,7 +99,7 @@ public class HomeController {
 	 */
 	
 	@SuppressWarnings("nls")
-	@RequestMapping("/test")
+	@RequestMapping("/test")	
 	public String test(
 			@RequestParam(value = "echo", defaultValue = "echo") String echo) {
 		
@@ -113,6 +116,36 @@ public class HomeController {
 		}
 		
 		result += "<- " +  (String) rabbitTemplate.receiveAndConvert(QUEUE_NAME);
+		
+		return result;
+	}
+	
+	@SuppressWarnings("nls")
+	@RequestMapping("/tiletest")	
+	public Map<String, String> tiletest(
+			@RequestParam(value = "echo", defaultValue = "echo") String echo) {
+		
+		Map<String, String> result = new HashMap<String, String>();
+		
+		try {
+		String message = (new Date()) + ":Test Message:" + UUID.randomUUID();
+		
+		result.put ("send", message );
+		
+		rabbitTemplate.convertAndSend(QUEUE_NAME, message);
+		try {
+			Thread.sleep(1200);
+		} catch (InterruptedException e) {
+		}
+		
+		result.put("recieve",  (String) rabbitTemplate.receiveAndConvert(QUEUE_NAME));
+		
+		result.put("result", "success");
+		}
+		catch (Exception e) {
+			result.put("result", "failure");
+			result.put("exceptionMessage", e.getMessage());
+		}
 		
 		return result;
 	}
