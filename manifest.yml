@@ -1,7 +1,7 @@
 ---
 applications:
-  - name: rqbbitMq_sv
-    buildpack: java_buildpack
+  - name: rabbitmq_test
+    buildpack: java_buildpack_offline
     path: target/predix-rabbitmq-cf-1.0.0.jar
 services:
-      - rabbitmq_sv
+  - rabbitmq_sv
